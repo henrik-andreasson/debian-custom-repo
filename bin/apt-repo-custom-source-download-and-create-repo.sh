@@ -50,6 +50,7 @@ if [ "x${REPO_DIR}" != "x" ] ; then
 	if [ ! -d "${REPO_DIR}" ] ; then
 		mkdir -p "${REPO_DIR}"
 	fi
+	ORGPATH=$(pwd)
 	cd "${REPO_DIR}"
 else
   echo "no repo dir"
@@ -57,6 +58,7 @@ else
 fi
 
 IFS=$'\n'
+
 for pkg in ${PACKAGES} ; do
 	if echo "$pkg" | grep -q "^#" ; then
 		continue
@@ -83,6 +85,7 @@ for pkg in ${PACKAGES} ; do
 done
 
 
+
 rm -rf Packages Packages.gz Release Release.gpg InRelease
 
 apt-ftparchive --arch amd64 packages . > Packages
@@ -94,13 +97,20 @@ if [ "x${NOSIGN}" = "x0" ] ; then
     gpg --clearsign -o InRelease Release
 fi
 
+set -x
+
+cd "${ORGPATH}"
+pwd
+
 DATE_DIR_REPO=$(basename "${REPO_DIR}")
 REPO_DIR2=$(dirname $REPO_DIR)
 
 REPONAME_DIR_REPO=$(basename "${REPO_DIR2}")
+cd "${ORGPATH}"
 
 DIR_FOR_ZIPPING=$(dirname $(dirname "${REPO_DIR}"))
 cd "${DIR_FOR_ZIPPING}"
+echo "changing to dir: ${DIR_FOR_ZIPPING}"
 if [ "x${ZIPIT}" = "x1" ] ; then
     echo tar Jcvf "${REPONAME_DIR_REPO}-${DATE_DIR_REPO}.tar.xz" "${REPONAME_DIR_REPO}/${DATE_DIR_REPO}"
     tar Jcvf "${REPONAME_DIR_REPO}-${DATE_DIR_REPO}.tar.xz" "${REPONAME_DIR_REPO}/${DATE_DIR_REPO}"

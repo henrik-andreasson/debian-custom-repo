@@ -7,7 +7,7 @@ docker run --rm -it \
     --mount type=bind,source=/opt/custom-debian-repo/config/,target=/build/config \
     --mount type=bind,source=/opt/custom-debian-repo/repos/,target=/build/repos \
     custom_debian_repo \
-    -f config/debian-client-packages.txt  \
+    -f config/debian-server-packages.txt  \
     -s config/debian.sources.list \
-    -r repos/debian-workstation/2025-01-09/ \
+    -r repos/debian-server-extra/2025-08-17/ \
     -d
