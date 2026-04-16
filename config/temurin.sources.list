@@ -1,1 +1,1 @@
-deb https://packages.adoptium.net/artifactory/deb bullseye main
+deb [signed-by=/opt/custom-debian-repo/config/temurin.keyring.gpg] https://packages.adoptium.net/artifactory/deb trixie main

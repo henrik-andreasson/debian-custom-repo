@@ -1,4 +1,5 @@
-temurin-8-jdk
 temurin-11-jdk
 temurin-17-jdk
+temurin-21-jdk
 adoptium-ca-certificates
+libasound2t64

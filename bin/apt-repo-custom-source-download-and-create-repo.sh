@@ -50,7 +50,6 @@ if [ "x${REPO_DIR}" != "x" ] ; then
 	if [ ! -d "${REPO_DIR}" ] ; then
 		mkdir -p "${REPO_DIR}"
 	fi
-	ORGPATH=$(pwd)
 	cd "${REPO_DIR}"
 else
   echo "no repo dir"
@@ -58,32 +57,30 @@ else
 fi
 
 IFS=$'\n'
-
 for pkg in ${PACKAGES} ; do
 	if echo "$pkg" | grep -q "^#" ; then
 		continue
 	fi
   echo "downloading $pkg"
   if [ "x${SOURCELIST}" != "x" ] ; then
-    apt-get download -o Dir::Cache="./" -o Dir::Cache::archives="./" -o Dir::Etc::SourceList="${SOURCELIST}" $pkg
+    apt-get download  -o Dir::Etc::SourceList="${SOURCELIST}" $pkg
   else
-    apt-get download -o Dir::Cache="./" -o Dir::Cache::archives="./" $pkg
+    apt-get download  $pkg
   fi
 
-
+#-o 'Acquire::http::Proxy=http://172.17.0.1:3142'
 	if [ $DEPENDS -eq 1 ] ; then
-	 	depends=$(apt-rdepends -o Dir::Etc::SourceList="${SOURCELIST}" "$pkg" | grep -v "^ ")
+	 	depends=$(apt-rdepends -o 'Acquire::http::Proxy=http://aptcacher:3142' -o Dir::Etc::SourceList="${SOURCELIST}" "$pkg" | grep -v "^ ")
 	  for dep in $depends ; do
 	    echo "Downloading dependencies for $pkg: $dep"
       if [ "x${SOURCELIST}" != "x" ] ; then
-        apt-get download -o Dir::Cache="./" -o Dir::Cache::archives="./" -o Dir::Etc::SourceList="${SOURCELIST}" $dep
+        apt-get download  -o Dir::Etc::SourceList="${SOURCELIST}" $dep
       else
-        apt-get download -o Dir::Cache="./" -o Dir::Cache::archives="./" $dep
+        apt-get download  $dep
       fi
 	  done
 	fi
 done
-
 
 
 rm -rf Packages Packages.gz Release Release.gpg InRelease
@@ -97,20 +94,13 @@ if [ "x${NOSIGN}" = "x0" ] ; then
     gpg --clearsign -o InRelease Release
 fi
 
-set -x
-
-cd "${ORGPATH}"
-pwd
-
 DATE_DIR_REPO=$(basename "${REPO_DIR}")
 REPO_DIR2=$(dirname $REPO_DIR)
 
 REPONAME_DIR_REPO=$(basename "${REPO_DIR2}")
-cd "${ORGPATH}"
 
 DIR_FOR_ZIPPING=$(dirname $(dirname "${REPO_DIR}"))
 cd "${DIR_FOR_ZIPPING}"
-echo "changing to dir: ${DIR_FOR_ZIPPING}"
 if [ "x${ZIPIT}" = "x1" ] ; then
     echo tar Jcvf "${REPONAME_DIR_REPO}-${DATE_DIR_REPO}.tar.xz" "${REPONAME_DIR_REPO}/${DATE_DIR_REPO}"
     tar Jcvf "${REPONAME_DIR_REPO}-${DATE_DIR_REPO}.tar.xz" "${REPONAME_DIR_REPO}/${DATE_DIR_REPO}"

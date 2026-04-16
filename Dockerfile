@@ -1,35 +1,36 @@
-FROM debian:bookworm
+FROM debian:trixie
 
 WORKDIR /build
-RUN echo 'Acquire::http::Proxy "http://172.17.0.1:3142";'   > /etc/apt/apt.conf.d/00cacher
-RUN echo 'Acquire::https::Proxy "https://172.17.0.1:3142";' >> /etc/apt/apt.conf.d/00cacher
-
 RUN apt-get update
 RUN apt-get upgrade -y
 RUN apt-get install --no-install-recommends -y \
-    unzip  wget bash xorriso ruby ruby-rubygems \
-    apt-rdepends sudo apt-utils \
-    gnupg2 xz-utils
-
+    unzip  wget bash xorriso ruby ruby-rubygems apt-rdepends sudo apt-utils gnupg2
 RUN apt-get clean
 RUN rm -rf /var/lib/apt/lists/*
 
 RUN gem install fpm
 
-RUN mkdir -p /build
+RUN mkdir -p /opt/custom-debian-repo
 
-RUN mkdir -p        /build/bin
-RUN mkdir -p        /build/config
+RUN mkdir -p        /opt/custom-debian-repo/bin
+RUN mkdir -p        /opt/custom-debian-repo/config
+RUN mkdir -p        /opt/repo
 
-RUN groupadd -g 1001 builder 
-RUN useradd -m -u 1001 -g builder builder
+# the repo dir must be owned by the builder user in the HOST file system
+# since the sync is executed as the builder user, it must have write permissions on the repo dir
+RUN groupadd -g 1000 builder ; useradd -m -u 1000 -g builder builder
 RUN echo '%builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
 
-COPY bin/*         /build/bin
-COPY config/*      /build/config
+#RUN echo 'Acquire::http::Proxy "http://aptcacher:3142";'   > /etc/apt/apt.conf.d/00cacher
+#RUN echo 'Acquire::https::Proxy "http://aptcacher:3142";'   >> /etc/apt/apt.conf.d/00cacher
+COPY bin/*         /opt/custom-debian-repo/bin
+COPY config/*      /opt/custom-debian-repo/config
 
-RUN chown -R builder:builder /build
+
+RUN chown -R builder /build
 RUN echo "hello"
 USER builder
 
-ENTRYPOINT ["/build/bin/apt-repo-custom-source-download-and-create-repo.sh"]
+RUN apt search srvadmin
+
+ENTRYPOINT ["/opt/custom-debian-repo/bin/apt-repo-custom-source-download-and-create-repo.sh"]

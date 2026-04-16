@@ -1,6 +1,5 @@
 # one package per line
-opensc-pkcs11
-opensc
+apache2
 ansible
 python3-pymysql
 jq
@@ -11,3 +10,12 @@ python3-netaddr
 python3-mysqldb
 gnutls-bin
 linux-image-amd64
+mariadb-server
+ntp
+opensc
+opensc-pkcs11
+openjdk-21-jre-headless
+tcpdump
+netcat-openbsd
+libbsd0
+libeclipse-jdt-core-java
