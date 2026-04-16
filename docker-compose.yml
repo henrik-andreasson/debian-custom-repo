@@ -1,0 +1,35 @@
+services:
+  aptcacher:
+    build: aptcacher
+
+  repo:
+    build:
+      .
+      # The 'entrypoint' specifies the script to run, overriding the image's default ENTRYPOINT
+    entrypoint:
+      /opt/custom-debian-repo/bin/apt-repo-custom-source-download-and-create-repo.sh
+      # 'command' passes the arguments to the entrypoint script
+    command:
+      - -f
+      - /opt/custom-debian-repo/config/debian-server-packages.txt
+      - -s
+      - /opt/custom-debian-repo/config/debian.sources.list
+      - -r
+      - /opt/repos/debianserver/20251206/
+      - -d
+        # 'volumes' maps the local directories to the container directories (equivalent to --mount type=bind)
+    volumes:
+      - type: bind
+        source: /opt/custom-debian-repo/config/
+        target: /opt/custom-debian-repo/config
+      - type: bind
+        source: /opt/repos/
+        target: /opt/repos
+        # 'tty: true' and 'stdin_open: true' simulate the -it flags
+    tty: true
+    stdin_open:
+      true
+      # 'restart: "no"' is used since this is a one-off task (though 'docker compose run' handles this)
+    restart: "no"
+    depends_on:
+      - aptcacher
